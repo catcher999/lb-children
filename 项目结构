@@ -1,0 +1,65 @@
+lb-children
+├── pom.xml
+├── src/main/java/com/platform/lbchildren
+│   ├── LeftbehindApplication.java
+│   ├── config
+│   │   ├── CorsConfig.java
+│   │   ├── SecurityConfig.java
+│   │   └── WebSocketConfig.java
+│   ├── controller
+│   │   ├── ChatController.java
+│   │   ├── ChildController.java
+│   │   ├── ParentController.java
+│   │   └── ResourceController.java
+            TreeholeController.java
+│   ├── dto
+│   │   ├── AddChildRequest.java
+│   │   ├── DiaryRequest.java
+│   │   ├── LoginRequest.java
+│   │   ├── MessageRequest.java
+│   │   └── RegisterRequest.java
+            TreeholePostResponse.java
+            TreeholeReplyResponse.java
+│   ├── entity
+│   │   ├── Album.java
+│   │   ├── Child.java
+│   │   ├── Diary.java
+│   │   ├── EduResource.java
+│   │   ├── Message.java
+│   │   └── Parent.java
+            TreeholePost.java
+            TreeholeReply.java
+│   ├── repository
+│   │   ├── AlbumRepository.java
+│   │   ├── ChildRepository.java
+│   │   ├── DiaryRepository.java
+│   │   ├── EduResourceRepository.java
+│   │   ├── MessageRepository.java
+│   │   └── ParentRepository.java
+            TreeholeReplyRepository.java
+            TreeholePostRepository.java
+│   ├── security
+│   │   ├── JwtAuthFilter.java
+│   │   ├── JwtUtil.java
+│   │   ├── StompPrincipal.java
+│   │   ├── UserPrincipal.java
+│   │   └── WebSocketAuthInterceptor.java
+│   └── service
+│       ├── ChatService.java
+│       ├── ChildService.java
+│       ├── ParentService.java
+│       └── ResourceService.java
+            TreeholeService.java
+└── src/main/resources
+    ├── application.yml
+    └── data.sql
+
+    ai接入
+entity/AIChatHistory.java
+repository/AIChatHistoryRepository.java
+dto/AIChatRequest.java
+dto/AIChatResponse.java
+service/AIChatService.java
+controller/AIChatController.java
+config/RestTemplateConfig.java
+config/RateLimiter.java (可选)
