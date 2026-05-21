@@ -2,6 +2,8 @@ server:
   port: 8080
 
 spring:
+  profiles: #在 application.yaml 中激活 secret profile（推荐）
+    active: secret #
   datasource:
     url: jdbc:h2:mem:lb_children;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
