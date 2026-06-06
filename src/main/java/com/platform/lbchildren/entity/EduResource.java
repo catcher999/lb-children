@@ -17,4 +17,5 @@ public class EduResource {
     private String type;
     private String url;
     private String description;
+    private String coverUrl;
 }
