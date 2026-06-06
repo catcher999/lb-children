@@ -1,65 +1,75 @@
-lb-children
-├── pom.xml
+lb-children (留守儿童关爱平台后端)
+├── pom.xml (Maven 配置文件 - Spring Boot 3.2.5 + Java 21)
 ├── src/main/java/com/platform/lbchildren
-│   ├── LeftbehindApplication.java
-│   ├── config
-│   │   ├── CorsConfig.java
-│   │   ├── SecurityConfig.java
-│   │   └── WebSocketConfig.java
-│   ├── controller
-│   │   ├── ChatController.java
-│   │   ├── ChildController.java
-│   │   ├── ParentController.java
-│   │   └── ResourceController.java
-            TreeholeController.java
-│   ├── dto
-│   │   ├── AddChildRequest.java
-│   │   ├── DiaryRequest.java
-│   │   ├── LoginRequest.java
-│   │   ├── MessageRequest.java
-│   │   └── RegisterRequest.java
-            TreeholePostResponse.java
-            TreeholeReplyResponse.java
-│   ├── entity
-│   │   ├── Album.java
-│   │   ├── Child.java
-│   │   ├── Diary.java
-│   │   ├── EduResource.java
-│   │   ├── Message.java
-│   │   └── Parent.java
-            TreeholePost.java
-            TreeholeReply.java
-│   ├── repository
-│   │   ├── AlbumRepository.java
-│   │   ├── ChildRepository.java
-│   │   ├── DiaryRepository.java
-│   │   ├── EduResourceRepository.java
-│   │   ├── MessageRepository.java
-│   │   └── ParentRepository.java
-            TreeholeReplyRepository.java
-            TreeholePostRepository.java
-│   ├── security
-│   │   ├── JwtAuthFilter.java
-│   │   ├── JwtUtil.java
-│   │   ├── StompPrincipal.java
-│   │   ├── UserPrincipal.java
-│   │   └── WebSocketAuthInterceptor.java
-│   └── service
-│       ├── ChatService.java
-│       ├── ChildService.java
-│       ├── ParentService.java
-│       └── ResourceService.java
-            TreeholeService.java
-└── src/main/resources
-    ├── application.yml
-    └── data.sql
-
-    ai接入
-entity/AIChatHistory.java
-repository/AIChatHistoryRepository.java
-dto/AIChatRequest.java
-dto/AIChatResponse.java
-service/AIChatService.java
-controller/AIChatController.java
-config/RestTemplateConfig.java
-config/RateLimiter.java (可选)
+│   ├── LbChildrenApplication.java (Spring Boot 启动类)
+│   │
+│   ├── config (配置层 - 6个配置类)
+│   │   ├── CorsConfig.java (跨域配置 - 允许前端访问)
+│   │   ├── DataInitializer.java (数据初始化 - 应用启动时创建测试数据)
+│   │   ├── RestTemplateConfig.java (REST 客户端配置 - 用于调用 AI API)
+│   │   ├── SecretConfig.java (敏感配置加载 - JWT密钥等)
+│   │   ├── SecurityConfig.java (安全配置 - Spring Security + JWT 权限控制)
+│   │   └── WebSocketConfig.java (WebSocket 配置 - STOMP 协议支持实时通讯)
+│   │
+│   ├── controller (控制器层 - 6个API控制器)
+│   │   ├── AIChatController.java (AI 聊天接口 - 智能问答、历史记录查询)
+│   │   ├── ChatController.java (实时聊天接口 - WebSocket 消息处理)
+│   │   ├── ChildController.java (儿童端接口 - 日记、相册、学习进度)
+│   │   ├── ParentController.java (家长端接口 - 注册登录、查看孩子信息)
+│   │   ├── ResourceController.java (教育资源接口 - 资源列表、学习追踪)
+│   │   └── TreeholeController.java (树洞倾诉接口 - 发帖、回复、查看)
+│   │
+│   ├── dto (数据传输对象 - 9个DTO类)
+│   │   ├── AIChatRequest.java (AI 聊天请求 - 问题内容)
+│   │   ├── AIChatResponse.java (AI 聊天响应 - 回答内容、历史ID)
+│   │   ├── AddChildRequest.java (添加儿童请求 - 儿童基本信息)
+│   │   ├── DiaryRequest.java (日记请求 - 日记内容、图片)
+│   │   ├── LoginRequest.java (登录请求 - 用户名、密码)
+│   │   ├── MessageRequest.java (消息请求 - 接收者、内容、类型)
+│   │   ├── RegisterRequest.java (注册请求 - 家长/儿童注册信息)
+│   │   ├── TreeholePostResponse.java (树洞帖子响应 - 帖子详情、回复数)
+│   │   └── TreeholeReplyResponse.java (树洞回复响应 - 回复内容、时间)
+│   │
+│   ├── entity (实体层 - 10个JPA实体)
+│   │   ├── AIChatHistory.java (AI 聊天记录 - 用户ID、问题、回答、时间)
+│   │   ├── Album.java (成长相册 - 图片URL、描述、上传时间)
+│   │   ├── Child.java (儿童信息 - 姓名、年龄、学校、关联家长)
+│   │   ├── Diary.java (儿童日记 - 内容、心情、日期、隐私标记)
+│   │   ├── EduResource.java (教育资源 - 标题、链接、分类、适用年龄)
+│   │   ├── LearningProgress.java (学习进度 - 用户ID、资源ID、进度百分比)
+│   │   ├── Message.java (聊天消息 - 发送者、接收者、内容、媒体类型)
+│   │   ├── Parent.java (家长信息 - 姓名、手机号、关联儿童列表)
+│   │   ├── TreeholePost.java (树洞帖子 - 内容、图片、作者、回复列表)
+│   │   └── TreeholeReply.java (树洞回复 - 内容、图片、作者、关联帖子)
+│   │
+│   ├── repository (数据访问层 - 10个Repository接口)
+│   │   ├── AIChatHistoryRepository.java (AI 历史查询 - 按用户、时间统计)
+│   │   ├── AlbumRepository.java (相册数据访问)
+│   │   ├── ChildRepository.java (儿童数据访问 - 按家长查询)
+│   │   ├── DiaryRepository.java (日记数据访问 - 按儿童、日期查询)
+│   │   ├── EduResourceRepository.java (资源数据访问 - 按分类查询)
+│   │   ├── LearningProgressRepository.java (学习进度查询 - 批量获取)
+│   │   ├── MessageRepository.java (消息数据访问 - 会话记录查询)
+│   │   ├── ParentRepository.java (家长数据访问 - 按手机号查询)
+│   │   ├── TreeholePostRepository.java (帖子数据访问 - 按时间排序)
+│   │   └── TreeholeReplyRepository.java (回复数据访问 - 按帖子查询)
+│   │
+│   ├── security (安全层 - 5个安全组件)
+│   │   ├── JwtAuthFilter.java (JWT 认证过滤器 - 拦截请求验证Token)
+│   │   ├── JwtUtil.java (JWT 工具类 - 生成/验证Token、解析Claims)
+│   │   ├── StompPrincipal.java (WebSocket 用户主体 - STOMP 协议身份)
+│   │   ├── UserPrincipal.java (HTTP 用户主体 - Spring Security 用户信息)
+│   │   └── WebSocketAuthInterceptor.java (WebSocket 认证拦截器 - 握手阶段验证)
+│   │
+│   └── service (业务逻辑层 - 6个服务类)
+│       ├── AIChatService.java (AI 聊天服务 - DeepSeek API集成、敏感词过滤、频率限制)
+│       ├── ChatService.java (实时聊天服务 - 消息转发、会话管理)
+│       ├── ChildService.java (儿童业务服务 - 日记管理、相册管理、学习进度)
+│       ├── ParentService.java (家长业务服务 - 注册登录、绑定儿童、查看数据)
+│       ├── ResourceService.java (教育资源服务 - 资源推荐、进度追踪)
+│       └── TreeholeService.java (树洞服务 - 发帖、回复、内容审核)
+│
+└── src/main/resources (资源配置)
+    ├── application.yaml (主配置文件 - 端口、数据源、JPA、JWT、AI配置)
+    ├── application-secret.yaml (敏感配置 - JWT密钥、API Key，通过profile激活)
+    └── data.sql (初始数据脚本 - 测试账号、基础教育资源)
