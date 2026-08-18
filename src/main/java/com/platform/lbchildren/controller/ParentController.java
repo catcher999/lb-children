@@ -2,8 +2,10 @@ package com.platform.lbchildren.controller;
 
 import com.platform.lbchildren.common.Result;
 import com.platform.lbchildren.dto.AddChildRequest;
+import com.platform.lbchildren.dto.ChildProfileVO;
 import com.platform.lbchildren.dto.ChildVO;
 import com.platform.lbchildren.dto.LoginRequest;
+import com.platform.lbchildren.dto.ProfileConsentRequest;
 import com.platform.lbchildren.dto.RegisterRequest;
 import com.platform.lbchildren.security.UserPrincipal;
 import com.platform.lbchildren.service.ParentService;
@@ -47,5 +49,21 @@ public class ParentController {
     @GetMapping("/my-children")
     public Result<List<ChildVO>> getMyChildren(@AuthenticationPrincipal UserPrincipal principal) {
         return Result.ok(parentService.getMyChildren(principal.getUserId()));
+    }
+
+    /** 设置是否授权查看孩子画像（阶段五） */
+    @PostMapping("/child/{childId}/profile-consent")
+    public Result<String> setProfileConsent(@AuthenticationPrincipal UserPrincipal principal,
+                                            @PathVariable Long childId,
+                                            @Valid @RequestBody ProfileConsentRequest request) {
+        parentService.setProfileConsent(principal.getUserId(), childId, request.getConsent());
+        return Result.ok(request.getConsent() ? "已授权查看孩子画像" : "已撤销孩子画像授权");
+    }
+
+    /** 查看孩子画像摘要（需家长授权，阶段五） */
+    @GetMapping("/child/{childId}/profile")
+    public Result<ChildProfileVO> getChildProfile(@AuthenticationPrincipal UserPrincipal principal,
+                                                  @PathVariable Long childId) {
+        return Result.ok(parentService.getChildProfile(principal.getUserId(), childId));
     }
 }

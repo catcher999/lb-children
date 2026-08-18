@@ -10,6 +10,7 @@ import com.platform.lbchildren.mapper.AIChatHistoryMapper;
 import com.platform.lbchildren.security.UserPrincipal;
 import com.platform.lbchildren.service.AIChatService;
 import com.platform.lbchildren.service.MemoryService;
+import com.platform.lbchildren.service.RagService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +46,7 @@ public class AIChatServiceImpl implements AIChatService {
     private final RestTemplate restTemplate;
     private final AIChatHistoryMapper historyMapper;
     private final MemoryService memoryService;
+    private final RagService ragService;
 
     @Value("${ai.api.url}")
     private String apiUrl;
@@ -97,12 +99,34 @@ public class AIChatServiceImpl implements AIChatService {
             }
         }
 
-        // 3. 构建 system prompt（保证回答适合儿童），并注入记忆「近况」（冷启动时为空，回退固定 prompt）
+        // 3. 构建 system prompt（保证回答适合儿童），注入记忆
+        // 阶段三：长期画像（L3 核心记忆，注入优先级最高）
         String systemPrompt = "你是一个为留守儿童和外出务工家长提供心理支持与教育辅导的AI助手。" +
                 "你的回答应温暖、鼓励、积极，适合6-16岁儿童阅读，避免负面或敏感内容。";
+        String profile = memoryService.getProfile(user);
+        if (!profile.isEmpty()) {
+            systemPrompt = systemPrompt + "\n" + profile;
+        }
+        // 阶段一：近况（L1，冷启动时为空）
         String context = memoryService.getContext(user);
         if (!context.isEmpty()) {
             systemPrompt = systemPrompt + "\n" + context;
+        }
+        // 阶段二：注入与当前问题相关的短期记忆（L2，综合得分 Top-K，命中即引用强化）
+        String relevant = memoryService.getRelevantMemories(user, question);
+        if (!relevant.isEmpty()) {
+            systemPrompt = systemPrompt + "\n" + relevant;
+        }
+        // 冷启动回退（口径）：画像/近况/相关记忆三段均为空时，显式告知 AI 这是与用户首次交流，
+        // 不要假装了解用户，热情自我介绍并引导用户分享
+        if (profile.isEmpty() && context.isEmpty() && relevant.isEmpty()) {
+            systemPrompt = systemPrompt + "\n用户是第一次与你交流，你对他没有任何历史了解。" +
+                    "请先热情地自我介绍，温和地邀请他分享最近的心情、烦恼或想聊的话题。";
+        }
+        // 阶段四：注入权威文献参考（RAG 通道，只检索权威指南；危机命中时输出安全引导）
+        String reference = ragService.getReference(user, question);
+        if (!reference.isEmpty()) {
+            systemPrompt = systemPrompt + "\n" + reference;
         }
 
         // 4. 调用大模型 API（OpenAI 兼容格式）
@@ -158,6 +182,9 @@ public class AIChatServiceImpl implements AIChatService {
         history.setAnswer(answer);
         history.setCreatedAt(LocalDateTime.now());
         historyMapper.insert(history);
+
+        // 阶段二：本次对话提炼为短期记忆条目（溯源 historyId）
+        memoryService.saveChatMemory(user, question, history.getId());
 
         // 7. 返回
         AIChatResponse resp = new AIChatResponse();

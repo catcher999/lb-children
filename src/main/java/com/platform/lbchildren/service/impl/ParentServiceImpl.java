@@ -1,16 +1,20 @@
-package com.platform.lbchildren.service;
+package com.platform.lbchildren.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.platform.lbchildren.common.BusinessException;
 import com.platform.lbchildren.common.ResultCode;
 import com.platform.lbchildren.dto.AddChildRequest;
+import com.platform.lbchildren.dto.ChildProfileVO;
 import com.platform.lbchildren.dto.ChildVO;
 import com.platform.lbchildren.dto.RegisterRequest;
 import com.platform.lbchildren.entity.Child;
 import com.platform.lbchildren.entity.Parent;
+import com.platform.lbchildren.entity.UserProfile;
 import com.platform.lbchildren.mapper.ChildMapper;
 import com.platform.lbchildren.mapper.ParentMapper;
+import com.platform.lbchildren.mapper.UserProfileMapper;
 import com.platform.lbchildren.security.JwtUtil;
+import com.platform.lbchildren.service.ParentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,6 +31,7 @@ public class ParentServiceImpl implements ParentService {
 
     private final ParentMapper parentMapper;
     private final ChildMapper childMapper;
+    private final UserProfileMapper userProfileMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
@@ -81,7 +86,49 @@ public class ParentServiceImpl implements ParentService {
             vo.setNickname(c.getNickname());
             vo.setAge(c.getAge());
             vo.setAvatar(c.getAvatar());
+            vo.setProfileConsent(Boolean.TRUE.equals(c.getProfileConsent()));
             return vo;
         }).toList();
+    }
+
+    @Override
+    public void setProfileConsent(Long parentId, Long childId, boolean consent) {
+        Child child = requireOwnChild(parentId, childId);
+        Child upd = new Child();
+        upd.setId(child.getId());
+        upd.setProfileConsent(consent);
+        childMapper.updateById(upd);
+    }
+
+    @Override
+    public ChildProfileVO getChildProfile(Long parentId, Long childId) {
+        Child child = requireOwnChild(parentId, childId);
+        if (!Boolean.TRUE.equals(child.getProfileConsent())) {
+            throw new BusinessException(ResultCode.PROFILE_NOT_CONSENTED);
+        }
+        UserProfile profile = userProfileMapper.selectOne(new LambdaQueryWrapper<UserProfile>()
+                .eq(UserProfile::getUserId, child.getId())
+                .eq(UserProfile::getUserRole, "CHILD")
+                .last("LIMIT 1"));
+        ChildProfileVO vo = new ChildProfileVO();
+        vo.setChildId(child.getId());
+        vo.setNickname(child.getNickname());
+        if (profile != null) {
+            vo.setProfileSummary(profile.getProfileSummary());
+            vo.setUpdatedAt(profile.getUpdatedAt());
+        }
+        return vo;
+    }
+
+    /** 校验儿童存在且归属当前家长，返回该儿童 */
+    private Child requireOwnChild(Long parentId, Long childId) {
+        Child child = childMapper.selectById(childId);
+        if (child == null) {
+            throw new BusinessException(ResultCode.CHILD_NOT_FOUND);
+        }
+        if (!child.getParentId().equals(parentId)) {
+            throw new BusinessException(ResultCode.NOT_FAMILY);
+        }
+        return child;
     }
 }

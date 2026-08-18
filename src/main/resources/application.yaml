@@ -52,5 +52,11 @@ ai:
     enabled: ${AI_MEMORY_ENABLED:true}          # 阶段一：记忆近况注入开关（false 时回退固定 prompt）
     max-items: ${AI_MEMORY_MAX_ITEMS:5}          # 每类数据源最多取几条
     max-content-length: ${AI_MEMORY_MAX_CONTENT_LENGTH:60}  # 单条内容最大长度，防止 prompt 过长
+    top-k: ${AI_MEMORY_TOP_K:5}                  # 阶段二：相关记忆注入条数上限
+    decay-lambda: ${AI_MEMORY_DECAY_LAMBDA:0.05} # 阶段二：指数衰减系数（/天）
+    token-budget: ${AI_MEMORY_TOKEN_BUDGET:500}  # 阶段二：相关记忆段落 token 预算
   child:
     daily-limit: ${AI_CHILD_DAILY_LIMIT:15}
+  rag:
+    enabled: ${AI_RAG_ENABLED:true}          # 阶段四：RAG 权威文献检索开关（false 时跳过注入）
+    top-k: ${AI_RAG_TOP_K:3}                 # 注入文献条数上限

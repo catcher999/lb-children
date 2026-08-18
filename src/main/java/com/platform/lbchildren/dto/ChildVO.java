@@ -11,4 +11,6 @@ public class ChildVO {
     private String nickname;
     private Integer age;
     private String avatar;
+    /** 家长是否已授权查看孩子画像（阶段五） */
+    private Boolean profileConsent;
 }

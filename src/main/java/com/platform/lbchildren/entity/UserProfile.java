@@ -8,30 +8,25 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 /**
- * 儿童信息实体（通过 parentId 关联家长）
+ * 长期画像实体（阶段三：LLM 压缩出的核心记忆）
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("child")
-public class Child {
+@TableName("user_profile")
+public class UserProfile {
 
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    private String nickname;
+    /** 记忆主体 ID */
+    private Long userId;
 
-    private Integer age;
+    /** PARENT 或 CHILD */
+    private String userRole;
 
-    private String avatar;
-
-    /** 关联家长 ID */
-    private Long parentId;
-
-    /** 家长是否授权查看孩子画像（阶段五） */
-    private Boolean profileConsent = false;
-
-    private LocalDateTime createdAt;
+    /** LLM 压缩出的长期画像 */
+    private String profileSummary;
 
     private LocalDateTime updatedAt;
 }

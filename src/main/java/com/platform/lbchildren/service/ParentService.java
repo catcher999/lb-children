@@ -1,6 +1,7 @@
 package com.platform.lbchildren.service;
 
 import com.platform.lbchildren.dto.AddChildRequest;
+import com.platform.lbchildren.dto.ChildProfileVO;
 import com.platform.lbchildren.dto.ChildVO;
 import com.platform.lbchildren.dto.RegisterRequest;
 
@@ -22,4 +23,10 @@ public interface ParentService {
 
     /** 查询家长的儿童列表 */
     List<ChildVO> getMyChildren(Long parentId);
+
+    /** 设置是否授权查看孩子画像（阶段五） */
+    void setProfileConsent(Long parentId, Long childId, boolean consent);
+
+    /** 查看孩子画像摘要（需授权，阶段五） */
+    ChildProfileVO getChildProfile(Long parentId, Long childId);
 }
