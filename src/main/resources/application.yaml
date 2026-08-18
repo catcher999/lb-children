@@ -48,5 +48,9 @@ ai:
     url: ${AI_API_URL:https://api.deepseek.com/chat/completions}   # DeepSeek 地址
     key: ${AI_API_KEY:placeholder-api-key}                         # 在 application-local.yaml 中覆盖
   model: ${AI_MODEL:deepseek-chat}
+  memory:
+    enabled: ${AI_MEMORY_ENABLED:true}          # 阶段一：记忆近况注入开关（false 时回退固定 prompt）
+    max-items: ${AI_MEMORY_MAX_ITEMS:5}          # 每类数据源最多取几条
+    max-content-length: ${AI_MEMORY_MAX_CONTENT_LENGTH:60}  # 单条内容最大长度，防止 prompt 过长
   child:
     daily-limit: ${AI_CHILD_DAILY_LIMIT:15}

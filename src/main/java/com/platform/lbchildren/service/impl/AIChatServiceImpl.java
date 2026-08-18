@@ -9,6 +9,7 @@ import com.platform.lbchildren.entity.AIChatHistory;
 import com.platform.lbchildren.mapper.AIChatHistoryMapper;
 import com.platform.lbchildren.security.UserPrincipal;
 import com.platform.lbchildren.service.AIChatService;
+import com.platform.lbchildren.service.MemoryService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,7 @@ public class AIChatServiceImpl implements AIChatService {
 
     private final RestTemplate restTemplate;
     private final AIChatHistoryMapper historyMapper;
+    private final MemoryService memoryService;
 
     @Value("${ai.api.url}")
     private String apiUrl;
@@ -95,9 +97,13 @@ public class AIChatServiceImpl implements AIChatService {
             }
         }
 
-        // 3. 构建 system prompt（保证回答适合儿童）
+        // 3. 构建 system prompt（保证回答适合儿童），并注入记忆「近况」（冷启动时为空，回退固定 prompt）
         String systemPrompt = "你是一个为留守儿童和外出务工家长提供心理支持与教育辅导的AI助手。" +
                 "你的回答应温暖、鼓励、积极，适合6-16岁儿童阅读，避免负面或敏感内容。";
+        String context = memoryService.getContext(user);
+        if (!context.isEmpty()) {
+            systemPrompt = systemPrompt + "\n" + context;
+        }
 
         // 4. 调用大模型 API（OpenAI 兼容格式）
         Map<String, Object> requestBody = new HashMap<>();
