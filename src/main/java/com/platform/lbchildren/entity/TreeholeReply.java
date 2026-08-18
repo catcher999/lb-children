@@ -1,32 +1,35 @@
 package com.platform.lbchildren.entity;
 
-import jakarta.persistence.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "treehole_reply")
+/**
+ * 树洞回复实体
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@TableName("treehole_reply")
 public class TreeholeReply {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @TableId(type = IdType.AUTO)
     private Long id;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
     private String imageUrl;
 
-    // 内部记录回复者
+    /** 内部记录回复者 */
     private Long authorUserId;
+
     private String authorRole;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    /** 关联帖子 ID */
+    private Long postId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", nullable = false)
-    private TreeholePost post;
+    private LocalDateTime createdAt;
 }

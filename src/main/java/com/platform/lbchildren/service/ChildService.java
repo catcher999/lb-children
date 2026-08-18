@@ -1,77 +1,30 @@
 package com.platform.lbchildren.service;
 
+import com.platform.lbchildren.dto.ChildLoginRequest;
 import com.platform.lbchildren.dto.DiaryRequest;
-import com.platform.lbchildren.entity.*;
-import com.platform.lbchildren.repository.*;
-import com.platform.lbchildren.security.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import com.platform.lbchildren.entity.Album;
+import com.platform.lbchildren.entity.Diary;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@Service
-public class ChildService {
+/**
+ * 儿童端业务接口
+ */
+public interface ChildService {
 
-    @Autowired
-    private ParentRepository parentRepository;
+    /** 儿童登录（家长用户名 + 家长密码 + 儿童昵称），返回 JWT token */
+    String childLogin(ChildLoginRequest request);
 
-    @Autowired
-    private ChildRepository childRepository;
+    /** 新增日记 */
+    void addDiary(Long childId, DiaryRequest request);
 
-    @Autowired
-    private DiaryRepository diaryRepository;
+    /** 查询某儿童的全部日记 */
+    List<Diary> getMyDiaries(Long childId);
 
-    @Autowired
-    private AlbumRepository albumRepository;
+    /** 上传相册（真实文件上传），返回图片访问 URL */
+    String uploadAlbum(Long childId, MultipartFile file, String description);
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    public String childLogin(String parentUsername, String parentPassword, String childNickname) {
-        Parent parent = parentRepository.findByUsername(parentUsername)
-                .orElseThrow(() -> new RuntimeException("家长账号不存在"));
-        if (!passwordEncoder.matches(parentPassword, parent.getPassword())) {
-            throw new RuntimeException("家长密码错误");
-        }
-        Child child = childRepository.findByParentIdAndNickname(parent.getId(), childNickname);
-        if (child == null) {
-            throw new RuntimeException("未找到该儿童，请检查昵称");
-        }
-        return jwtUtil.generateToken(childNickname, "CHILD", child.getId());
-    }
-
-    public String addDiary(Long childId, DiaryRequest request) {
-        Child child = childRepository.findById(childId)
-                .orElseThrow(() -> new RuntimeException("儿童不存在"));
-        Diary diary = new Diary();
-        diary.setContent(request.getContent());
-        diary.setImageUrl(request.getImageUrl());
-        diary.setIsAnonymous(request.getIsAnonymous() != null ? request.getIsAnonymous() : false);
-        diary.setChild(child);
-        diaryRepository.save(diary);
-        return "日记保存成功";
-    }
-
-    public List<Diary> getMyDiaries(Long childId) {
-        return diaryRepository.findByChildIdOrderByCreatedAtDesc(childId);
-    }
-
-    public String uploadAlbum(Long childId, String imageUrl, String description) {
-        Child child = childRepository.findById(childId)
-                .orElseThrow(() -> new RuntimeException("儿童不存在"));
-        Album album = new Album();
-        album.setImageUrl(imageUrl);
-        album.setDescription(description);
-        album.setChild(child);
-        albumRepository.save(album);
-        return "相册上传成功";
-    }
-
-    public List<Album> getMyAlbums(Long childId) {
-        return albumRepository.findByChildIdOrderByCreatedAtDesc(childId);
-    }
+    /** 查询某儿童的全部相册 */
+    List<Album> getMyAlbums(Long childId);
 }

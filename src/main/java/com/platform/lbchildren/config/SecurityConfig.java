@@ -31,17 +31,22 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // 公开：登录注册、H2 控制台、WebSocket 端点
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()   // 上传的图片等静态资源
                         .requestMatchers("/api/parent/register", "/api/parent/login",
                                 "/api/child/login").permitAll()
+                        // 教育资源列表公开，进度接口需登录
+                        .requestMatchers("/api/resources", "/api/resources/types").permitAll()
+                        // 儿童：日记、相册
                         .requestMatchers("/api/child/add-diary", "/api/child/upload-album",
                                 "/api/child/my-diaries", "/api/child/my-albums").hasRole("CHILD")
-                        .requestMatchers("/api/child/**").hasAnyRole("CHILD", "PARENT")
+                        // 公共登录（儿童+家长）
+                        .requestMatchers("/api/child/**", "/api/resources/**").hasAnyRole("CHILD", "PARENT")
                         .requestMatchers("/api/parent/**").hasRole("PARENT")
-                        .requestMatchers("/api/resources/**").permitAll()
-                        .requestMatchers("/api/treehole/**").hasAnyRole("PARENT", "CHILD")//新增的树洞接口
-                        .requestMatchers("/api/ai/**").hasAnyRole("PARENT", "CHILD")//新增的AI接口
+                        .requestMatchers("/api/treehole/**").hasAnyRole("PARENT", "CHILD")
+                        .requestMatchers("/api/ai/**").hasAnyRole("PARENT", "CHILD")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

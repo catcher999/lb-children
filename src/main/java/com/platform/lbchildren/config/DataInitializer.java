@@ -1,45 +1,63 @@
 package com.platform.lbchildren.config;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.platform.lbchildren.entity.Child;
 import com.platform.lbchildren.entity.Parent;
-import com.platform.lbchildren.repository.ChildRepository;
-import com.platform.lbchildren.repository.ParentRepository;
+import com.platform.lbchildren.mapper.ChildMapper;
+import com.platform.lbchildren.mapper.ParentMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
+/**
+ * 启动时初始化测试数据（家长 parent1 + 两个儿童）
+ * 幂等：用户名已存在则跳过
+ */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
-    private final ParentRepository parentRepository;
-    private final ChildRepository childRepository;
+    private final ParentMapper parentMapper;
+    private final ChildMapper childMapper;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
-        // 如果 parent1 不存在则创建，密码动态加密
-        if (!parentRepository.existsByUsername("parent1")) {
-            Parent parent = new Parent();
-            parent.setUsername("parent1");
-            parent.setPassword(passwordEncoder.encode("123456"));  // 每次启动都重新加密
-            parent.setPhone("13800138000");
-            parentRepository.save(parent);  // 此时 parent 获得自增 ID
-
-            // 同时创建孩子，并关联到刚保存的 parent
-            Child child1 = new Child();
-            child1.setNickname("小明");
-            child1.setAge(10);
-            child1.setParent(parent);
-            childRepository.save(child1);
-
-            Child child2 = new Child();
-            child2.setNickname("小红");
-            child2.setAge(8);
-            child2.setParent(parent);
-            childRepository.save(child2);
+        if (parentMapper.selectCount(
+                new LambdaQueryWrapper<Parent>().eq(Parent::getUsername, "parent1")) > 0) {
+            log.info("parent1 已存在，跳过初始化");
+            return;
         }
-        // 注：如果 H2 使用 create-drop，每次重启数据库清空，这里的条件判断将始终成立，会重新创建
+
+        Parent parent = new Parent();
+        parent.setUsername("parent1");
+        parent.setPassword(passwordEncoder.encode("123456"));
+        parent.setPhone("13800138000");
+        parent.setCreatedAt(LocalDateTime.now());
+        parent.setUpdatedAt(LocalDateTime.now());
+        parentMapper.insert(parent);
+
+        Child child1 = new Child();
+        child1.setNickname("小明");
+        child1.setAge(10);
+        child1.setParentId(parent.getId());
+        child1.setCreatedAt(LocalDateTime.now());
+        child1.setUpdatedAt(LocalDateTime.now());
+        childMapper.insert(child1);
+
+        Child child2 = new Child();
+        child2.setNickname("小红");
+        child2.setAge(8);
+        child2.setParentId(parent.getId());
+        child2.setCreatedAt(LocalDateTime.now());
+        child2.setUpdatedAt(LocalDateTime.now());
+        childMapper.insert(child2);
+
+        log.info("测试数据初始化完成：parent1 / 小明 / 小红");
     }
 }

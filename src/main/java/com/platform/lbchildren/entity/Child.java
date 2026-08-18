@@ -1,37 +1,34 @@
 package com.platform.lbchildren.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
-import java.util.ArrayList;
-import java.util.List;
 
-@Entity
-@Table(name = "child")
+import java.time.LocalDateTime;
+
+/**
+ * 儿童信息实体（通过 parentId 关联家长）
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@TableName("child")
 public class Child {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @TableId(type = IdType.AUTO)
     private Long id;
 
-    @Column(nullable = false)
     private String nickname;
 
     private Integer age;
+
     private String avatar;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id", nullable = false)
-    //后续可能需要更改为级联保存
-    @JsonIgnore
-    // 解决循环引用
-    private Parent parent;
+    /** 关联家长 ID */
+    private Long parentId;
 
-    @OneToMany(mappedBy = "child", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Album> albums = new ArrayList<>();
+    private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "child", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Diary> diaries = new ArrayList<>();
+    private LocalDateTime updatedAt;
 }

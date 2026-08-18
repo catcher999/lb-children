@@ -1,25 +1,30 @@
 package com.platform.lbchildren.entity;
 
-import jakarta.persistence.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "album")
+/**
+ * 成长相册实体
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@TableName("album")
 public class Album {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     private String imageUrl;
+
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "child_id", nullable = false)
-    private Child child;
+    /** 关联儿童 ID */
+    private Long childId;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 }

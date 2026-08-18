@@ -1,28 +1,33 @@
 package com.platform.lbchildren.entity;
 
-import jakarta.persistence.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "diary")
+/**
+ * 儿童日记实体
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@TableName("diary")
 public class Diary {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @TableId(type = IdType.AUTO)
     private Long id;
 
-    @Column(columnDefinition = "TEXT")
     private String content;
 
     private String imageUrl;
+
+    /** 是否匿名 */
     private Boolean isAnonymous = false;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "child_id", nullable = false)
-    private Child child;
+    /** 关联儿童 ID */
+    private Long childId;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 }

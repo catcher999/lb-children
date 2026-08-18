@@ -1,27 +1,33 @@
 package com.platform.lbchildren.entity;
 
-import jakarta.persistence.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "ai_chat_history")
+/**
+ * AI 聊天历史实体
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@TableName("ai_chat_history")
 public class AIChatHistory {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @TableId(type = IdType.AUTO)
     private Long id;
 
-    private Long userId;        // 提问者ID
-    private String userRole;    // PARENT 或 CHILD
+    /** 提问者 ID */
+    private Long userId;
 
-    @Column(columnDefinition = "TEXT")
+    /** PARENT 或 CHILD */
+    private String userRole;
+
     private String question;
 
-    @Column(columnDefinition = "TEXT")
     private String answer;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 }

@@ -2,70 +2,33 @@ package com.platform.lbchildren.service;
 
 import com.platform.lbchildren.entity.EduResource;
 import com.platform.lbchildren.entity.LearningProgress;
-import com.platform.lbchildren.repository.EduResourceRepository;
-import com.platform.lbchildren.repository.LearningProgressRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-@Service
-public class ResourceService {
+/**
+ * 教育资源业务接口
+ */
+public interface ResourceService {
 
-    @Autowired
-    private EduResourceRepository resourceRepository;
+    /** 按类型查询教育资源 */
+    List<EduResource> getResourcesByType(String type);
 
-    @Autowired
-    private LearningProgressRepository progressRepository;
+    /** 查询全部教育资源 */
+    List<EduResource> getAllResources();
 
-    public List<EduResource> getResourcesByType(String type) {
-        return resourceRepository.findByType(type.toUpperCase());
-    }
+    /** 查询所有资源类型 */
+    List<String> getAllResourceTypes();
 
-    public List<EduResource> getAllResources() {
-        return resourceRepository.findAll();
-    }
+    /** 更新学习进度 */
+    LearningProgress updateProgress(Long userId, Long resourceId, Integer progressPercent);
 
-    public List<String> getAllResourceTypes() {
-        List<EduResource> allResources = resourceRepository.findAll();
-        return allResources.stream()
-                .map(EduResource::getType)
-                .distinct()
-                .sorted()
-                .collect(Collectors.toList());
-    }
+    /** 查询某资源的学习进度 */
+    Optional<LearningProgress> getProgress(Long userId, Long resourceId);
 
-    public LearningProgress updateProgress(Long userId, Long resourceId, Integer progressPercent) {
-        Optional<LearningProgress> existingProgress = progressRepository.findByUserIdAndResourceId(userId, resourceId);
-        
-        LearningProgress progress;
-        if (existingProgress.isPresent()) {
-            progress = existingProgress.get();
-            progress.setProgressPercent(progressPercent);
-            progress.setLastLearnTime(LocalDateTime.now());
-        } else {
-            progress = new LearningProgress();
-            progress.setUserId(userId);
-            progress.setResourceId(resourceId);
-            progress.setProgressPercent(progressPercent);
-            progress.setLastLearnTime(LocalDateTime.now());
-        }
-        
-        return progressRepository.save(progress);
-    }
+    /** 查询某用户的所有学习进度 */
+    List<LearningProgress> getUserProgress(Long userId);
 
-    public Optional<LearningProgress> getProgress(Long userId, Long resourceId) {
-        return progressRepository.findByUserIdAndResourceId(userId, resourceId);
-    }
-
-    public List<LearningProgress> getUserProgress(Long userId) {
-        return progressRepository.findByUserId(userId);
-    }
-
-    public void deleteProgress(Long userId, Long resourceId) {
-        progressRepository.deleteByUserIdAndResourceId(userId, resourceId);
-    }
+    /** 删除某学习进度 */
+    void deleteProgress(Long userId, Long resourceId);
 }

@@ -1,21 +1,30 @@
 package com.platform.lbchildren.entity;
 
-import jakarta.persistence.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
 
-@Entity
-@Table(name = "edu_resource")
+/**
+ * 教育资源实体
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@TableName("edu_resource")
 public class EduResource {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     private String title;
+
+    /** VIDEO / COURSE / ARTICLE */
     private String type;
+
     private String url;
+
     private String description;
+
     private String coverUrl;
 }

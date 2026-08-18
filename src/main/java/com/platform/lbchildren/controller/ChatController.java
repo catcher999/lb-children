@@ -1,11 +1,11 @@
 package com.platform.lbchildren.controller;
 
+import com.platform.lbchildren.common.Result;
 import com.platform.lbchildren.dto.MessageRequest;
 import com.platform.lbchildren.entity.Message;
 import com.platform.lbchildren.security.UserPrincipal;
 import com.platform.lbchildren.service.ChatService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,12 +13,19 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 实时聊天接口（WebSocket 消息处理 + HTTP 历史查询）
+ */
 @RestController
+@RequiredArgsConstructor
 public class ChatController {
 
-    @Autowired
-    private ChatService chatService;
+    private final ChatService chatService;
 
+    /**
+     * 通过 WebSocket 接收并转发聊天消息
+     * 客户端订阅 /app/chat 发送，服务端推送到 /user/{receiverId}/queue/messages
+     */
     @MessageMapping("/chat")
     public void processMessage(@Payload MessageRequest request,
                                @AuthenticationPrincipal UserPrincipal user) {
@@ -32,10 +39,10 @@ public class ChatController {
         chatService.handleChatMessage(msg);
     }
 
+    /** 查询与某用户的聊天记录 */
     @GetMapping("/api/chat/history")
-    public ResponseEntity<?> getChatHistory(@RequestParam Long otherUserId,
-                                            @AuthenticationPrincipal UserPrincipal user) {
-        List<Message> messages = chatService.getConversation(user.getUserId(), otherUserId);
-        return ResponseEntity.ok(messages);
+    public Result<List<Message>> getChatHistory(@RequestParam Long otherUserId,
+                                                @AuthenticationPrincipal UserPrincipal user) {
+        return Result.ok(chatService.getConversation(user.getUserId(), otherUserId));
     }
 }

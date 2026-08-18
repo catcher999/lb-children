@@ -1,64 +1,51 @@
 package com.platform.lbchildren.controller;
 
+import com.platform.lbchildren.common.Result;
 import com.platform.lbchildren.dto.AddChildRequest;
+import com.platform.lbchildren.dto.ChildVO;
 import com.platform.lbchildren.dto.LoginRequest;
 import com.platform.lbchildren.dto.RegisterRequest;
-import com.platform.lbchildren.entity.Child;
 import com.platform.lbchildren.security.UserPrincipal;
 import com.platform.lbchildren.service.ParentService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 家长端接口：注册 / 登录 / 添加儿童 / 查看孩子
+ */
 @RestController
 @RequestMapping("/api/parent")
+@RequiredArgsConstructor
 public class ParentController {
 
-    @Autowired
-    private ParentService parentService;
+    private final ParentService parentService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-        try {
-            String result = parentService.register(request);
-            return ResponseEntity.ok(Map.of("message", result));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public Result<String> register(@Valid @RequestBody RegisterRequest request) {
+        parentService.register(request);
+        return Result.ok("注册成功");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        try {
-            String token = parentService.login(request.getUsername(), request.getPassword());
-            return ResponseEntity.ok(Map.of("token", token, "role", "PARENT"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public Result<Map<String, String>> login(@Valid @RequestBody LoginRequest request) {
+        String token = parentService.login(request.getUsername(), request.getPassword());
+        return Result.ok(Map.of("token", token, "role", "PARENT"));
     }
 
     @PostMapping("/add-child")
-    public ResponseEntity<?> addChild(@AuthenticationPrincipal UserPrincipal principal,
-                                      @RequestBody AddChildRequest request) {
-        try {
-            String result = parentService.addChild(principal, request);
-            return ResponseEntity.ok(Map.of("message", result));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public Result<String> addChild(@AuthenticationPrincipal UserPrincipal principal,
+                                   @Valid @RequestBody AddChildRequest request) {
+        parentService.addChild(principal.getUserId(), request);
+        return Result.ok("儿童添加成功");
     }
 
     @GetMapping("/my-children")
-    public ResponseEntity<?> getMyChildren(@AuthenticationPrincipal UserPrincipal principal) {
-        try {
-            List<Child> children = parentService.getMyChildren(principal.getUserId());
-            return ResponseEntity.ok(children);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public Result<List<ChildVO>> getMyChildren(@AuthenticationPrincipal UserPrincipal principal) {
+        return Result.ok(parentService.getMyChildren(principal.getUserId()));
     }
 }

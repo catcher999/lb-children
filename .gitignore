@@ -37,3 +37,8 @@ application-secret.yaml
 application-secret.yml
 *-secret.yaml
 *-secret.yml
+
+# 本机敏感配置（数据库密码 / JWT 密钥 / API Key）
+application-local.yaml
+application-local.yml
+application-local.properties

@@ -1,28 +1,32 @@
 package com.platform.lbchildren.entity;
 
-import jakarta.persistence.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
-import java.util.ArrayList;
-import java.util.List;
 
-@Entity
-@Table(name = "parent")
+import java.time.LocalDateTime;
+
+/**
+ * 家长用户实体
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@TableName("parent")
 public class Parent {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @TableId(type = IdType.AUTO)
     private Long id;
 
-    @Column(unique = true, nullable = false)
     private String username;
 
-    @Column(nullable = false)
+    /** BCrypt 加密后的密码 */
     private String password;
 
     private String phone;
 
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Child> children = new ArrayList<>();
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }

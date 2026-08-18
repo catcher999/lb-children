@@ -1,34 +1,39 @@
 package com.platform.lbchildren.entity;
 
-import jakarta.persistence.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "message")
+/**
+ * 实时聊天消息实体
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@TableName("message")
 public class Message {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @TableId(type = IdType.AUTO)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
+    /** 发送方角色 PARENT / CHILD */
     private SenderType senderType;
 
     private Long senderId;
+
     private Long receiverId;
 
-    @Column(columnDefinition = "TEXT")
     private String content;
 
     private String mediaUrl;
 
-    @Enumerated(EnumType.STRING)
+    /** 消息类型 CHAT / VOICE / PHOTO */
     private MessageType messageType;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
     public enum SenderType {
         PARENT, CHILD

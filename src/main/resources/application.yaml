@@ -2,43 +2,51 @@ server:
   port: 8080
 
 spring:
-  profiles: #在 application.yaml 中激活 secret profile（推荐）
-    active: secret #
+  config:
+    # 引入本机敏感配置（不存在时不报错），优先级高于本文件
+    import: optional:application-local.yaml
   datasource:
-    url: jdbc:h2:mem:lb_children;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-  #
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    #
-    defer-datasource-initialization: true #
-    #
-    properties:
-      hibernate:
-        format_sql: true
+    url: jdbc:mysql://localhost:3306/lb_children?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
   sql:
     init:
       mode: always
+      schema-locations: classpath:schema.sql
       data-locations: classpath:data.sql
-  #
+      continue-on-error: false
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# 文件上传
+app:
+  upload-dir: ${APP_UPLOAD_DIR:./uploads}          # 上传文件保存目录
+  upload-base-url: ${APP_UPLOAD_BASE_URL:http://localhost:8080}   # 访问文件的基础地址
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
 
 jwt:
-  secret: ${JWT_SECRET:placeholder-jwt-secret}
+  # HS256 密钥，需为合法 Base64 且解码后 >= 32 字节；正式环境在 application-local.yaml 中覆盖
+  secret: ${JWT_SECRET:dGhpcyBpcyBhIHNlY3JldCBrZXkgdGhhdCBpcyBsb25nIGVub3VnaA==}
   expiration: ${JWT_EXPIRATION:86400000}   # 24小时
-
 
 ai:
   api:
-    url: ${AI_API_URL:https://api.deepseek.com/chat/completions}   # ← 替换为 DeepSeek 地址
-    key: ${AI_API_KEY:placeholder-api-key}          # ← 替换为你的 DeepSeek API Key
-  model: ${AI_MODEL:deepseek-chat}                                # ← 替换模型名（或 deepseek-reasoner）
+    url: ${AI_API_URL:https://api.deepseek.com/chat/completions}   # DeepSeek 地址
+    key: ${AI_API_KEY:placeholder-api-key}                         # 在 application-local.yaml 中覆盖
+  model: ${AI_MODEL:deepseek-chat}
   child:
-    daily-limit: ${AI_CHILD_DAILY_LIMIT:15}                                   # 保持不变
+    daily-limit: ${AI_CHILD_DAILY_LIMIT:15}
