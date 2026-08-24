@@ -42,3 +42,7 @@ application-secret.yml
 application-local.yaml
 application-local.yml
 application-local.properties
+# 临时/文档类,不入库
+child_login.json
+对比报告.md
+项目总结.md
