@@ -1,10 +1,10 @@
 package com.platform.lbchildren.config;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.platform.lbchildren.entity.Child;
-import com.platform.lbchildren.entity.Parent;
-import com.platform.lbchildren.mapper.ChildMapper;
-import com.platform.lbchildren.mapper.ParentMapper;
+import com.platform.lbchildren.domain.entity.Child;
+import com.platform.lbchildren.domain.entity.Parent;
+import com.platform.lbchildren.domain.mapper.ChildMapper;
+import com.platform.lbchildren.domain.mapper.ParentMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;

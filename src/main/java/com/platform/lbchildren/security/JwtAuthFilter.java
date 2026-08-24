@@ -5,8 +5,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -14,13 +14,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
+    private final RbacService rbacService;
+
+    public JwtAuthFilter(JwtUtil jwtUtil, RbacService rbacService) {
+        this.jwtUtil = jwtUtil;
+        this.rbacService = rbacService;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -35,11 +41,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String role = claims.get("role", String.class);
             Long userId = claims.get("userId", Long.class);
             UserPrincipal principal = new UserPrincipal(username, role, userId);
+
+            // RBAC：实时加载该用户的权限编码集合，与 ROLE_ 一起作为鉴权依据
+            List<GrantedAuthority> authorities = new ArrayList<>();
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+            for (String code : rbacService.loadPermissionCodes(userId, role)) {
+                authorities.add(new SimpleGrantedAuthority(code));
+            }
+
             UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            principal, null,
-                            Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
-                    );
+                    new UsernamePasswordAuthenticationToken(principal, null, authorities);
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }

@@ -132,3 +132,46 @@ UNION ALL SELECT
     '手机 校园 作业 用眼 陪伴 用网 管理'
 ) t
 WHERE NOT EXISTS (SELECT 1 FROM literature);
+
+-- ============================================================
+-- RBAC 种子数据（阶段B：角色 / 权限 / 角色-权限映射）
+-- 使用 INSERT IGNORE + 显式 ID，重启不重复
+-- ============================================================
+INSERT IGNORE INTO sys_role (id, code, name, description) VALUES
+    (1, 'PARENT', '家长', '家长角色：管理孩子、查看画像、提问 AI'),
+    (2, 'CHILD', '儿童', '儿童角色：日记、相册、树洞、AI 陪伴');
+
+INSERT IGNORE INTO sys_permission (id, code, name, description) VALUES
+    (1, 'parent:child:view', '查看孩子列表', '查看自己名下的孩子'),
+    (2, 'parent:child:add', '添加儿童', '为名下新增儿童'),
+    (3, 'parent:child:consent', '画像授权管理', '设置/撤销孩子画像授权'),
+    (4, 'parent:child:profile', '查看孩子画像', '查看已授权孩子的画像摘要'),
+    (5, 'child:diary:add', '写日记', '儿童写日记'),
+    (6, 'child:diary:view', '查看日记', '儿童查看自己的日记'),
+    (7, 'child:album:add', '上传相册', '儿童上传成长照片'),
+    (8, 'child:album:view', '查看相册', '儿童查看自己的相册'),
+    (9, 'treehole:post', '发布树洞', '在树洞匿名发布帖子'),
+    (10, 'treehole:view', '查看树洞', '浏览树洞帖子与回复'),
+    (11, 'treehole:reply', '回复树洞', '回复树洞帖子'),
+    (12, 'ai:ask', 'AI 提问', '向 AI 助手提问'),
+    (13, 'ai:history', '查看 AI 历史', '查看自己的提问历史'),
+    (14, 'resource:progress:update', '更新学习进度', '更新资源学习进度'),
+    (15, 'resource:progress:view', '查看学习进度', '查看自己的学习进度'),
+    (16, 'chat:send', '发送聊天', '与家庭成员实时聊天'),
+    (17, 'chat:history', '查看聊天记录', '查看与家庭成员的历史消息');
+
+-- 家长角色权限（parent:*, treehole, ai, resource, chat）
+INSERT IGNORE INTO sys_role_permission (role_id, permission_id) VALUES
+    (1, 1), (1, 2), (1, 3), (1, 4),
+    (1, 9), (1, 10), (1, 11),
+    (1, 12), (1, 13),
+    (1, 14), (1, 15),
+    (1, 16), (1, 17);
+
+-- 儿童角色权限（child:*, treehole, ai, resource, chat）
+INSERT IGNORE INTO sys_role_permission (role_id, permission_id) VALUES
+    (2, 5), (2, 6), (2, 7), (2, 8),
+    (2, 9), (2, 10), (2, 11),
+    (2, 12), (2, 13),
+    (2, 14), (2, 15),
+    (2, 16), (2, 17);

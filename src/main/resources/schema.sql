@@ -184,3 +184,52 @@ CREATE TABLE IF NOT EXISTS literature (
     PRIMARY KEY (id),
     KEY idx_category (category)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT '权威文献知识库（RAG 通道）';
+
+-- =========================================================
+-- RBAC 鉴权（阶段B）
+-- sys_role / sys_permission / sys_role_permission / sys_user_role
+-- user_id + user_role 复合定位用户（parent 与 child 的 id 可能重复）
+-- =========================================================
+
+-- 角色表
+CREATE TABLE IF NOT EXISTS sys_role (
+    id          BIGINT       NOT NULL AUTO_INCREMENT,
+    code        VARCHAR(50)  NOT NULL UNIQUE COMMENT '角色编码，如 PARENT/CHILD/ADMIN',
+    name        VARCHAR(50)  NOT NULL COMMENT '角色名称',
+    description VARCHAR(200),
+    created_at  DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT 'RBAC 角色表';
+
+-- 权限表
+CREATE TABLE IF NOT EXISTS sys_permission (
+    id          BIGINT       NOT NULL AUTO_INCREMENT,
+    code        VARCHAR(100) NOT NULL UNIQUE COMMENT '权限编码，如 parent:child:view',
+    name        VARCHAR(100) NOT NULL COMMENT '权限名称',
+    description VARCHAR(200),
+    created_at  DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT 'RBAC 权限表';
+
+-- 角色-权限关联表
+CREATE TABLE IF NOT EXISTS sys_role_permission (
+    id            BIGINT NOT NULL AUTO_INCREMENT,
+    role_id       BIGINT NOT NULL,
+    permission_id BIGINT NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_role_perm (role_id, permission_id),
+    CONSTRAINT fk_rp_role FOREIGN KEY (role_id) REFERENCES sys_role (id),
+    CONSTRAINT fk_rp_perm FOREIGN KEY (permission_id) REFERENCES sys_permission (id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT 'RBAC 角色-权限关联表';
+
+-- 用户-角色关联表
+CREATE TABLE IF NOT EXISTS sys_user_role (
+    id         BIGINT      NOT NULL AUTO_INCREMENT,
+    user_id    BIGINT      NOT NULL COMMENT '家长或儿童的用户 ID',
+    user_role  VARCHAR(20) NOT NULL COMMENT '数据源类型 PARENT/CHILD（区分同 ID 用户）',
+    role_id    BIGINT      NOT NULL,
+    created_at DATETIME    DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_user_role (user_id, user_role),
+    CONSTRAINT fk_ur_role FOREIGN KEY (role_id) REFERENCES sys_role (id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT 'RBAC 用户-角色关联表';

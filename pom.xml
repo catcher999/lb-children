@@ -92,11 +92,13 @@
 
     <build>
         <plugins>
-            <!-- JDK 23+ 需显式开启注解处理器，否则 Lombok 不生效 -->
+            <!-- JDK 23+ 需显式开启注解处理器，否则 Lombok 不生效；显式声明 release/parameters 消除编译告警 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
+                    <release>${java.version}</release>
+                    <parameters>true</parameters>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
