@@ -13,4 +13,7 @@ public class AIChatRequest {
     @NotBlank(message = "问题不能为空")
     @Size(max = 500, message = "问题长度不能超过500")
     private String question;
+
+    /** 可选：续写指定会话；不传则自动新建会话（B1） */
+    private Long sessionId;
 }

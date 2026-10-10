@@ -25,6 +25,9 @@ public class AIChatHistory {
     /** PARENT 或 CHILD */
     private String userRole;
 
+    /** 所属会话 ID（B1） */
+    private Long sessionId;
+
     private String question;
 
     private String answer;

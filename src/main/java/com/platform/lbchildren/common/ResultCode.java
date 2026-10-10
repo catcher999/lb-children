@@ -16,6 +16,7 @@ public enum ResultCode {
     UNAUTHORIZED(401, "未登录或Token无效"),
     FORBIDDEN(403, "权限不足"),
     NOT_FOUND(404, "资源不存在"),
+    RATE_LIMIT(429, "操作太频繁啦，先歇一会儿，我一直在等你回来"),
 
     USERNAME_EXIST(1001, "用户名已存在"),
     LOGIN_FAIL(1002, "用户名或密码错误"),

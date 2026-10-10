@@ -69,12 +69,37 @@ CREATE TABLE IF NOT EXISTS ai_chat_history (
     id          BIGINT       NOT NULL AUTO_INCREMENT,
     user_id     BIGINT       NOT NULL,
     user_role   VARCHAR(20)  NOT NULL COMMENT 'PARENT 或 CHILD',
+    session_id  BIGINT       COMMENT '所属会话 ID（NULL 表示历史遗留记录）',
     question    TEXT         NOT NULL,
     answer      TEXT         NOT NULL,
     created_at  DATETIME     DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    KEY idx_user_id (user_id)
+    KEY idx_user_id (user_id),
+    KEY idx_session (session_id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT 'AI 聊天历史表';
+
+-- B1：为已存在的 ai_chat_history 补齐 session_id 字段（幂等，已存在则跳过）
+SET @col_exists = (SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'ai_chat_history' AND COLUMN_NAME = 'session_id');
+SET @ddl = IF(@col_exists = 0,
+    'ALTER TABLE ai_chat_history ADD COLUMN session_id BIGINT NULL COMMENT ''所属会话ID''',
+    'SELECT 1');
+PREPARE stmt FROM @ddl;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- AI 会话表（B1：会话建模 + 多轮上下文）
+CREATE TABLE IF NOT EXISTS ai_session (
+    id          BIGINT       NOT NULL AUTO_INCREMENT,
+    user_id     BIGINT       NOT NULL,
+    user_role   VARCHAR(20)  NOT NULL COMMENT 'PARENT 或 CHILD',
+    title       VARCHAR(100) COMMENT '会话标题（取首问截断）',
+    summary     MEDIUMTEXT   COMMENT '会话内更早内容压缩摘要（增量压缩产物）',
+    created_at  DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    updated_at  DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY idx_user (user_id, user_role)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT 'AI 会话表';
 
 -- 聊天消息表
 CREATE TABLE IF NOT EXISTS message (
